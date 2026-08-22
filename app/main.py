@@ -1,8 +1,11 @@
 # app/main.py
 
 from fastapi import FastAPI, HTTPException, status
-from app.database import database_is_available, initialize_database
 from contextlib import asynccontextmanager
+
+
+from app.database import database_is_available, initialize_database
+from app.routes.resumes import router as resume_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -46,3 +49,5 @@ def health_check():
         "version": "1.0.0",
         "database": "connected",
     }
+
+app.include_router(resume_router)

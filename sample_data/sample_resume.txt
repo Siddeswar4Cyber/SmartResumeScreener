@@ -1,0 +1,23 @@
+Arjun Kumar
+arjun.kumar@example.com
++91 9876543210
+
+EDUCATION
+Bachelor of Technology in Computer Science
+ABC University, 2022-2026
+
+SKILLS
+Python, FastAPI, Flask, SQL, MySQL, Git, HTML, CSS, JavaScript
+
+EXPERIENCE
+Backend Development Intern, Example Technologies
+January 2025 - June 2025
+
+Developed REST APIs using Python and FastAPI.
+Designed MySQL database tables and optimized SQL queries.
+Used Git and GitHub for collaborative development.
+
+PROJECTS
+Online Vehicle Rental System
+Developed a Flask and MySQL application for managing vehicles,
+customers, bookings and payments.
