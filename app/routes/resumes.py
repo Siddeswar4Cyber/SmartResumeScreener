@@ -6,6 +6,9 @@ from app.services.file_parser import (
     parse_resume_file,
 )
 
+from app.services.pii_redactor import redact_personal_information
+from app.services.resume_parser import extract_resume_data
+
 router = APIRouter(
     prefix="/api/resumes",
     tags=["Resumes"],
@@ -47,11 +50,20 @@ async def extract_resumes(
 
         try:
             # +1 for detecting files exceeding 5MB.
-            
             file_content = await uploaded_file.read(MAX_FILE_SIZE+1)
+
             parsed_file = parse_resume_file(
                 original_filename=filename,
                 file_content=file_content,
+            )
+
+            structured_data = extract_resume_data(parsed_file.text)
+
+            anonymized_text = redact_personal_information(
+                text = parsed_file.text,
+                name = structured_data["name"],
+                email = structured_data["email"],
+                phone = structured_data["phone"],
             )
 
             successful_files.append(
@@ -60,7 +72,9 @@ async def extract_resumes(
                     "file_type": parsed_file.file_type,
                     "page_count": parsed_file.page_count,
                     "character_count": parsed_file.character_count,
+                    "structured_data": structured_data,
                     "extracted_text": parsed_file.text,
+                    "anonymized_text": anonymized_text,
                 }
             )
         except FileParsingError as error:
