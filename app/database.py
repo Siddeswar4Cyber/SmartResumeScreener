@@ -9,12 +9,12 @@ DATABASE_PATH = DATA_DIRECTORY / "resume_screener.db"
 
 @contextmanager
 def get_database() -> Generator[sqlite3.Connection, None, None]:
-    '''
-    Provide a database connection and close it automatcally.
+    """
+    Provide a database connection and close it automatically.
 
     The transaction is committed when the operation succeeds and rolled back when an exception occurs.
-    '''
-    DATA_DIRECTORY.mkdir(parents=True,exist_ok=True)
+    """
+    DATA_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
     connection = sqlite3.connect(DATABASE_PATH)
     connection.row_factory = sqlite3.Row
@@ -26,21 +26,40 @@ def get_database() -> Generator[sqlite3.Connection, None, None]:
         connection.commit()
     except Exception:
         connection.rollback()
+        raise
     finally:
         connection.close()
 
-def initialize_database() -> None:
 
+def initialize_database() -> None:
     with get_database() as connection:
-        connection.executescript(
+        connection.execute(
             """
-            CREATE TABLE IF NOT EXISTS jobs(
+            CREATE TABLE IF NOT EXISTS jobs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 description TEXT NOT NULL,
+                structured_data_json TEXT NOT NULL DEFAULT '{}',
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            );
+            )
+            """
+        )
 
+        job_columns = connection.execute(
+            "PRAGMA table_info(jobs)"
+        ).fetchall()
+        job_column_names = {column["name"] for column in job_columns}
+
+        if "structured_data_json" not in job_column_names:
+            connection.execute(
+                """
+                ALTER TABLE jobs
+                ADD COLUMN structured_data_json TEXT NOT NULL DEFAULT '{}'
+                """
+            )
+
+        connection.execute(
+            """
             CREATE TABLE IF NOT EXISTS candidates (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL DEFAULT 'Unknown Candidate',
@@ -50,8 +69,12 @@ def initialize_database() -> None:
                 resume_text TEXT NOT NULL,
                 structured_data_json TEXT NOT NULL DEFAULT '{}',
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            );
+            )
+            """
+        )
 
+        connection.execute(
+            """
             CREATE TABLE IF NOT EXISTS screening_results (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 job_id INTEGER NOT NULL,
@@ -59,14 +82,14 @@ def initialize_database() -> None:
 
                 required_skills_score INTEGER NOT NULL DEFAULT 0,
                 preferred_skills_score INTEGER NOT NULL DEFAULT 0,
-                experience_skills_score INTEGER NOT NULL DEFAULT 0,
-                education_skills_score INTEGER NOT NULL DEFAULT 0,
+                experience_score INTEGER NOT NULL DEFAULT 0,
+                education_score INTEGER NOT NULL DEFAULT 0,
                 project_relevance_score INTEGER NOT NULL DEFAULT 0,
                 total_score INTEGER NOT NULL DEFAULT 0,
 
                 details_json TEXT NOT NULL DEFAULT '{}',
                 justification TEXT NOT NULL DEFAULT '',
-                recommedation TEXT NOT NULL DEFAULT '',
+                recommendation TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
                 FOREIGN KEY (job_id)
@@ -78,13 +101,47 @@ def initialize_database() -> None:
                     ON DELETE CASCADE,
                 
                 UNIQUE(job_id, candidate_id)
-            );
+            )
+            """
+        )
 
+        screening_columns = connection.execute(
+            "PRAGMA table_info(screening_results)"
+        ).fetchall()
+        screening_column_names = {
+            column["name"] for column in screening_columns
+        }
+        legacy_screening_columns = {
+            "experience_skills_score": "experience_score",
+            "education_skills_score": "education_score",
+            "recommedation": "recommendation",
+        }
+
+        for legacy_name, corrected_name in legacy_screening_columns.items():
+            if (
+                legacy_name in screening_column_names
+                and corrected_name not in screening_column_names
+            ):
+                connection.execute(
+                    f"""
+                    ALTER TABLE screening_results
+                    RENAME COLUMN {legacy_name} TO {corrected_name}
+                    """
+                )
+                screening_column_names.remove(legacy_name)
+                screening_column_names.add(corrected_name)
+
+        connection.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_results_jobs_id
-                ON screening_results(job_id);
-            
+                ON screening_results(job_id)
+            """
+        )
+
+        connection.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_results_candidate_id
-                ON screening_results(candidate_id);
+                ON screening_results(candidate_id)
             """
         )
 
