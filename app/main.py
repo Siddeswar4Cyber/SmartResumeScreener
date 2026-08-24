@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, status
 from app.database import database_is_available, initialize_database
 from app.routes.jobs import router as jobs_router
 from app.routes.resumes import router as resume_router
+from app.routes.screening import router as screening_router
 
 
 @asynccontextmanager
@@ -53,3 +54,4 @@ def health_check():
 
 app.include_router(resume_router)
 app.include_router(jobs_router)
+app.include_router(screening_router)
