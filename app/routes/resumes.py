@@ -38,7 +38,7 @@ async def extract_resumes(
         raise HTTPException(
             status_code = status.HTTP_400_BAD_REQUEST,
             detail=(
-                f"A maximum of {MAX_FILES_PER_REQUEST} resumes can be proccesed at once."
+                f"A maximum of {MAX_FILES_PER_REQUEST} resumes can be processed at once."
             ),
         )
 
@@ -90,7 +90,7 @@ async def extract_resumes(
             failed_files.append(
                 {
                     "filename": filename,
-                    "error": "An unexcepted error occured while reading the file.",
+                    "error": "An unexpected error occurred while reading the file.",
                 }
             )
 
