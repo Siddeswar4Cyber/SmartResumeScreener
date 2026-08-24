@@ -282,7 +282,7 @@ def extract_sections(text: str)-> dict[str,str]:
                 current_section = SECTION_HEADINGS[normalized_heading]
 
                 if remaining_text.strip():
-                    sections[current_section] = SECTION_HEADINGS[normalized_heading]
+                    sections[current_section].append(remaining_text.strip())
 
                 continue
 

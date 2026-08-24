@@ -230,7 +230,6 @@ async def extract_job_requirements(
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
@@ -257,7 +256,6 @@ async def extract_job_requirements(
         raise OpenRouterError(
             f"Could not connect to OpenRouter: {error}"
         ) from error
-
 
     try:
         response_data = response.json()

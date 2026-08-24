@@ -11,6 +11,9 @@ from app.routes.screening import router as screening_router
 from app.routes.results import router as results_router
 from app.routes.management import router as management_router
 
+from fastapi.staticfiles import StaticFiles
+from app.routes.frontend import FRONTEND_DIRECTORY, router as frontend_router
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -59,3 +62,12 @@ app.include_router(jobs_router)
 app.include_router(screening_router)
 app.include_router(results_router)
 app.include_router(management_router)
+
+if FRONTEND_DIRECTORY.is_dir():
+    app.mount(
+        "/static",
+        StaticFiles(directory=FRONTEND_DIRECTORY),
+        name="static",
+    )
+
+app.include_router(frontend_router)

@@ -59,6 +59,13 @@ class ResumeParserTests(unittest.TestCase):
         self.assertIn("Backend Development Intern", result["experience"])
         self.assertIn("Vehicle Rental System",result["projects"])
 
+    def test_extracts_content_after_inline_section_heading(self):
+        result = extract_resume_data(
+            "Asha Rao\nSKILLS: Python, FastAPI\nPROJECTS: Resume Screener"
+        )
+
+        self.assertEqual(result["projects"], "Resume Screener")
+
     def test_redacts_personal_information(self):
         result = extract_resume_data(SAMPLE_RESUME)
 

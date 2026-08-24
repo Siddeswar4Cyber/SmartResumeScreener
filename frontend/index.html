@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create jobs, screen resumes, and review ranked candidates.">
+    <title>Smart Resume Screener</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <a class="skip-link" href="#main-content">Skip to dashboard</a>
+
+    <header class="page-header">
+        <div class="header-content">
+            <div class="brand-block">
+                <span class="brand-mark" aria-hidden="true">SR</span>
+                <div>
+                    <p class="eyebrow">Recruitment workspace</p>
+                    <h1>Smart Resume Screener</h1>
+                    <p class="subtitle">
+                        Create roles, screen resumes, and review evidence-based rankings in one place.
+                    </p>
+                </div>
+            </div>
+
+            <a class="docs-link" href="/docs">
+                <span aria-hidden="true">↗</span>
+                API documentation
+            </a>
+        </div>
+    </header>
+
+    <main id="main-content" class="dashboard-shell">
+        <div id="app-message" class="message global-message" role="status" aria-live="polite"></div>
+
+        <section class="stats-grid" aria-label="Dashboard summary">
+            <article class="stat-card">
+                <p>Total jobs</p>
+                <strong id="stat-total-jobs">0</strong>
+                <span>saved positions</span>
+            </article>
+            <article class="stat-card">
+                <p>Candidates screened</p>
+                <strong id="stat-candidates">0</strong>
+                <span>for the selected job</span>
+            </article>
+            <article class="stat-card">
+                <p>Strong matches</p>
+                <strong id="stat-strong-matches">0</strong>
+                <span>recommended candidates</span>
+            </article>
+            <article class="stat-card">
+                <p>Average score</p>
+                <strong id="stat-average-score">0</strong>
+                <span>out of 100</span>
+            </article>
+        </section>
+
+        <div class="dashboard-grid">
+            <section class="panel jobs-panel" aria-labelledby="jobs-heading">
+                <div class="panel-heading">
+                    <div>
+                        <p class="section-label">Positions</p>
+                        <h2 id="jobs-heading">Job management</h2>
+                    </div>
+                </div>
+
+                <form id="job-form" class="job-form">
+                    <div class="field-group">
+                        <label for="job-title">Job title</label>
+                        <input
+                            id="job-title"
+                            name="title"
+                            type="text"
+                            minlength="2"
+                            maxlength="200"
+                            placeholder="Backend Developer Intern"
+                            autocomplete="off"
+                            required
+                        >
+                    </div>
+
+                    <div class="field-group">
+                        <div class="label-row">
+                            <label for="job-description">Job description</label>
+                            <span id="job-description-count" class="character-count">0 / 20,000</span>
+                        </div>
+                        <textarea
+                            id="job-description"
+                            name="description"
+                            rows="8"
+                            minlength="50"
+                            maxlength="20000"
+                            placeholder="Describe required skills, experience, education, and responsibilities."
+                            aria-describedby="job-description-help job-description-count"
+                            required
+                        ></textarea>
+                        <p id="job-description-help" class="field-help">
+                            Use at least 50 characters so requirements can be extracted accurately.
+                        </p>
+                    </div>
+
+                    <button id="create-job-button" class="primary-button" type="submit">
+                        Extract and save job
+                    </button>
+                </form>
+
+                <div id="form-message" class="message" role="status" aria-live="polite"></div>
+
+                <div class="section-divider" aria-hidden="true"></div>
+
+                <div class="list-toolbar">
+                    <div class="search-field">
+                        <label class="visually-hidden" for="job-search">Search saved jobs</label>
+                        <input id="job-search" type="search" placeholder="Search saved jobs">
+                    </div>
+                    <button id="refresh-jobs-button" class="secondary-button compact-button" type="button">
+                        Refresh
+                    </button>
+                </div>
+
+                <div id="jobs-message" class="message" role="status" aria-live="polite"></div>
+                <div id="jobs-list" class="jobs-list" aria-label="Saved jobs"></div>
+            </section>
+
+            <section class="panel requirements-panel" aria-labelledby="requirements-heading">
+                <div class="panel-heading selected-job-heading">
+                    <div>
+                        <p class="section-label">Selected position</p>
+                        <h2 id="requirements-heading">Job requirements</h2>
+                        <p id="selected-job-meta" class="panel-subtitle">No job selected</p>
+                    </div>
+                    <button id="delete-job-button" class="danger-button compact-button" type="button" hidden>
+                        Delete job
+                    </button>
+                </div>
+
+                <div id="job-details" class="empty-state">
+                    Select a saved job to view its extracted requirements.
+                </div>
+            </section>
+
+            <section class="panel upload-panel full-width-panel" aria-labelledby="upload-heading">
+                <div class="panel-heading">
+                    <div>
+                        <p class="section-label">Candidate intake</p>
+                        <h2 id="upload-heading">Screen resumes</h2>
+                        <p id="upload-job-context" class="panel-subtitle">
+                            Select a job before adding resumes.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="drop-zone" class="drop-zone" aria-describedby="upload-guidance">
+                    <div class="drop-zone-icon" aria-hidden="true">↑</div>
+                    <div>
+                        <p><strong>Drop PDF or TXT resumes here</strong></p>
+                        <p id="upload-guidance">Up to 5 files, 5 MB per file. Files are processed sequentially.</p>
+                    </div>
+                    <input
+                        id="resume-files"
+                        class="visually-hidden-file"
+                        type="file"
+                        accept=".pdf,.txt,application/pdf,text/plain"
+                        multiple
+                        aria-label="Choose resume files"
+                    >
+                    <label class="secondary-button file-picker-label" for="resume-files">Choose files</label>
+                </div>
+
+                <div class="upload-actions">
+                    <button id="clear-files-button" class="text-button" type="button" disabled>
+                        Clear all
+                    </button>
+                    <button id="screen-resumes-button" class="primary-button" type="button" disabled>
+                        Screen selected resumes
+                    </button>
+                </div>
+
+                <div id="upload-message" class="message" role="status" aria-live="polite"></div>
+                <div id="selected-files" class="selected-files" aria-label="Selected resume files"></div>
+                <div id="screening-outcome" class="screening-outcome" aria-live="polite"></div>
+            </section>
+
+            <section class="panel results-panel full-width-panel" aria-labelledby="results-heading">
+                <div class="panel-heading results-heading-row">
+                    <div>
+                        <p class="section-label">Candidate ranking</p>
+                        <h2 id="results-heading">Ranked results</h2>
+                        <p class="panel-subtitle">
+                            <span id="candidate-count">0 candidates</span>
+                            <span aria-hidden="true"> · </span>
+                            <span id="results-job-title">No job selected</span>
+                        </p>
+                    </div>
+                    <button id="refresh-results-button" class="secondary-button compact-button" type="button" disabled>
+                        Refresh results
+                    </button>
+                </div>
+
+                <div id="results-message" class="message" role="status" aria-live="polite"></div>
+                <div id="results-list" class="results-list"></div>
+            </section>
+        </div>
+    </main>
+
+    <div id="candidate-modal" class="modal-backdrop" hidden>
+        <section
+            id="candidate-dialog"
+            class="candidate-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="candidate-dialog-title"
+            tabindex="-1"
+        >
+            <header class="modal-header">
+                <div>
+                    <p class="section-label">Candidate profile</p>
+                    <h2 id="candidate-dialog-title">Candidate details</h2>
+                </div>
+                <button id="close-candidate-button" class="icon-button" type="button" aria-label="Close candidate details">
+                    ×
+                </button>
+            </header>
+
+            <div id="candidate-message" class="message" role="status" aria-live="polite"></div>
+            <div id="candidate-detail-content" class="candidate-detail-content"></div>
+
+            <footer class="modal-actions">
+                <button id="rescreen-candidate-button" class="secondary-button" type="button" disabled>
+                    Re-screen candidate
+                </button>
+                <button id="delete-candidate-button" class="danger-button" type="button" disabled>
+                    Delete candidate
+                </button>
+            </footer>
+        </section>
+    </div>
+
+    <script src="/static/app.js" defer></script>
+</body>
+</html>
