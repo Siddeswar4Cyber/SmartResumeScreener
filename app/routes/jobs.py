@@ -11,8 +11,8 @@ from app.schemas.jobs import (
     JobResponse,
 )
 
-from app.services.job_extractor import extract_job_requirements
-from app.services.openrouter_client import OpenRouterError
+from app.services.llm_errors import LLMError
+from app.services.llm_services import extract_job_requirements
 
 router = APIRouter(
     prefix="/api/jobs",
@@ -59,7 +59,7 @@ async def create_job(
             title=request.title,
             description=request.description,
         )
-    except OpenRouterError as error:
+    except LLMError as error:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=str(error),

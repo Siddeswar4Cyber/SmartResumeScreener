@@ -6,9 +6,11 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from app.database import get_database
 from app.schemas.screening import ScreeningResult
 from app.services.file_parser import FileParsingError, MAX_FILE_SIZE, parse_resume_file
-from app.services.openrouter_client import OpenRouterError, screen_candidate
 from app.services.pii_redactor import redact_personal_information
 from app.services.resume_parser import extract_resume_data
+
+from app.services.llm_errors import LLMError
+from app.services.llm_services import screen_candidate
 
 logger = logging.getLogger(__name__)
 
@@ -211,7 +213,7 @@ async def screen_resumes_for_jobs(
                 }
             )
 
-        except OpenRouterError as error:
+        except LLMError as error:
             failed_files.append(
                 {
                     "filename": filename,

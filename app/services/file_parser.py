@@ -13,7 +13,7 @@ class FileParsingError(ValueError):
 
 @dataclass(frozen=True)
 class ParsedResumeFile:
-    """Strucutured result returned after extracting a resume file."""
+    """Structured result returned after extracting a resume file."""
     filename: str
     file_type: str
     text: str

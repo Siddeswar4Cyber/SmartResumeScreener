@@ -12,6 +12,8 @@ from app.schemas.screening import (
     build_screening_result,
 )
 
+from app.services.llm_errors import LLMError
+
 load_dotenv()
 
 OPENROUTER_API_URL = (
@@ -36,7 +38,7 @@ OPENROUTER_APP_NAME = os.getenv(
 MAX_JOB_DESCRIPTION_LENGTH = 20_000
 MAX_RESUME_LENGTH = 50_000
 
-class OpenRouterError(RuntimeError):
+class OpenRouterError(LLMError):
     """Raised when OpenRouter cannot produce a valid screening result."""
 
 
